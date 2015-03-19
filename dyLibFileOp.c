@@ -1,3 +1,14 @@
+/*
+ * We create a .so library to set the LD_PRELOAD.
+ * In this library, we try to intercept open, read, write, lseek, and close.
+ * After we intercept the calls, we print out the arguments to recheck whether
+ * the value of the arguments is correct or not. Then, we call the original function. 
+ *
+ *
+ * DeviceFile team
+ */
+
+
 #define _GNU_SOURCE
 
 #include <stdio.h>
@@ -38,14 +49,7 @@ RETURN VALUE
      return -1;
   }
 
-  /* if(strcmp("/ourtest.txt", path) == 0) */
-  /* { */
-  /*   printf("In our file, \n"); */
-  /*   int localFd = (*original_open)(path, flags); */
-  /*   return fcntl(localFd, F_DUPFD, 10000); */
-  /* } else { */
-    return (*original_open)(path, flags);
-    //} 
+  return (*original_open)(path, flags);
 }
 
 size_t read(int fd, void *buf, size_t count)
@@ -86,13 +90,9 @@ RETURN VALUE
       return -1;
    }
 
-   /* if(fd >= 10000){ */
-   /*   //Host File Descriptor */
-   /*   fprintf(stderr,"\n In Host file descriptor\n"); */
-   /*   return (*ourOriginal_read)(fd, buf, count); */
-   /* }else{ */
-     return (*ourOriginal_read)(fd, buf, count);
-   /* } */
+
+   return (*ourOriginal_read)(fd, buf, count);
+
 }
 
 ssize_t write(int fd, const void *buf, size_t count)
@@ -126,13 +126,9 @@ DESCRIPTION
       fprintf(stderr, "%s\n",err);
       return -1;
    }
-   /* if(fd >= 10000){ */
-   /*   //Host File Descriptor */
-   /*   fprintf(stderr,"\n In Host file descriptor\n"); */
-   /*   return (*ourOriginal_write)(fd, buf, count); */
-   /* }else{ */
-     return (*ourOriginal_write)(fd, buf, count);
-   /* } */
+
+   return (*ourOriginal_write)(fd, buf, count);
+
 }
 
 off_t lseek(int fd, off_t offset, int whence) 
@@ -194,11 +190,7 @@ RETURN VALUE
       fprintf(stderr, "%s\n", err);
       return -1;
    }
-   /* if(fd >= 10000){ */
-   /*   //Host File Descriptor */
-   /*   fprintf(stderr,"\n In Host file descriptor\n"); */
-   /*   return (*ourOriginal_close)(fd); */
-   /* }else{ */
-     return (*ourOriginal_close)(fd);
-   /* } */
+
+   return (*ourOriginal_close)(fd);
+
 }
